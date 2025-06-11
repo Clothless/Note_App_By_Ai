@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zefyrka/zefyrka.dart';
 import '../../../../shared/theme/theme_toggle_button.dart';
 import '../providers/notes_provider.dart';
+import 'note_edit_screen.dart';
 
 class NotesScreen extends ConsumerWidget {
   const NotesScreen({Key? key}) : super(key: key);
@@ -61,7 +62,8 @@ class NotesScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Navigate to add note screen
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const NoteEditScreen()));
         },
         child: const Icon(Icons.add),
         tooltip: 'Add Note',
