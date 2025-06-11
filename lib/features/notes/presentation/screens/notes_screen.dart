@@ -6,11 +6,25 @@ import '../../../../shared/theme/theme_toggle_button.dart';
 import '../providers/notes_provider.dart';
 import 'note_edit_screen.dart';
 
-class NotesScreen extends ConsumerWidget {
+class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotesScreen> createState() => _NotesScreenState();
+}
+
+class _NotesScreenState extends ConsumerState<NotesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final notesAsync = ref.watch(notesProvider);
     return Scaffold(
       appBar: AppBar(
@@ -22,6 +36,7 @@ class NotesScreen extends ConsumerWidget {
         child: Column(
           children: [
             TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search notes...',
                 prefixIcon: Icon(Icons.search),
@@ -29,34 +44,50 @@ class NotesScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
             ),
             const SizedBox(height: 16),
             Expanded(
               child: notesAsync.when(
-                data: (notes) => notes.isEmpty
-                    ? const Center(child: Text('No notes yet.'))
-                    : ListView.separated(
-                        itemCount: notes.length,
-                        separatorBuilder: (context, index) => const Divider(),
-                        itemBuilder: (context, index) {
-                          final note = notes[index];
-                          final doc =
-                              NotusDocument.fromJson(jsonDecode(note.content));
-                          return ListTile(
-                            title: Text(note.title),
-                            subtitle: Text(
-                              doc.toPlainText().length > 80
-                                  ? doc.toPlainText().substring(0, 80) + '...'
-                                  : doc.toPlainText(),
-                            ),
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      NoteEditScreen(note: note)));
-                            },
-                          );
-                        },
-                      ),
+                data: (notes) {
+                  final filteredNotes = notes.where((note) {
+                    final title = note.title.toLowerCase();
+                    final content =
+                        NotusDocument.fromJson(jsonDecode(note.content))
+                            .toPlainText()
+                            .toLowerCase();
+                    final query = _searchQuery.toLowerCase();
+                    return title.contains(query) || content.contains(query);
+                  }).toList();
+                  return filteredNotes.isEmpty
+                      ? const Center(child: Text('No notes found.'))
+                      : ListView.separated(
+                          itemCount: filteredNotes.length,
+                          separatorBuilder: (context, index) => const Divider(),
+                          itemBuilder: (context, index) {
+                            final note = filteredNotes[index];
+                            final doc = NotusDocument.fromJson(
+                                jsonDecode(note.content));
+                            return ListTile(
+                              title: Text(note.title),
+                              subtitle: Text(
+                                doc.toPlainText().length > 80
+                                    ? doc.toPlainText().substring(0, 80) + '...'
+                                    : doc.toPlainText(),
+                              ),
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        NoteEditScreen(note: note)));
+                              },
+                            );
+                          },
+                        );
+                },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, st) => Center(child: Text('Error: $e')),
               ),
