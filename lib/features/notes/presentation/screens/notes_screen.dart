@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zefyrka/zefyrka.dart';
 import '../../../../shared/theme/theme_toggle_button.dart';
 import '../providers/notes_provider.dart';
 
@@ -37,12 +39,14 @@ class NotesScreen extends ConsumerWidget {
                         separatorBuilder: (context, index) => const Divider(),
                         itemBuilder: (context, index) {
                           final note = notes[index];
+                          final doc =
+                              NotusDocument.fromJson(jsonDecode(note.content));
                           return ListTile(
                             title: Text(note.title),
                             subtitle: Text(
-                              note.content.length > 80
-                                  ? note.content.substring(0, 80) + '...'
-                                  : note.content,
+                              doc.toPlainText().length > 80
+                                  ? doc.toPlainText().substring(0, 80) + '...'
+                                  : doc.toPlainText(),
                             ),
                             onTap: () {},
                           );
