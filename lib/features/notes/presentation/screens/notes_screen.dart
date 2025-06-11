@@ -49,7 +49,11 @@ class NotesScreen extends ConsumerWidget {
                                   ? doc.toPlainText().substring(0, 80) + '...'
                                   : doc.toPlainText(),
                             ),
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      NoteEditScreen(note: note)));
+                            },
                           );
                         },
                       ),
