@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zefyrka/zefyrka.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import '../providers/notes_provider.dart';
 import '../../domain/entities/note.dart';
 import 'dart:convert';
@@ -16,8 +16,9 @@ class NoteEditScreen extends ConsumerStatefulWidget {
 class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
-  late ZefyrController _contentController;
+  late quill.QuillController _contentController;
   late FocusNode _focusNode;
+  late ScrollController _scrollController;
   bool _isChecklist = false;
   List<String> _tags = [];
 
@@ -25,12 +26,14 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.note?.title ?? '');
-    _contentController = ZefyrController(
-      widget.note != null && widget.note!.content.isNotEmpty
-          ? NotusDocument.fromJson(jsonDecode(widget.note!.content))
-          : NotusDocument(),
+    _contentController = quill.QuillController(
+      document: widget.note != null && widget.note!.content.isNotEmpty
+          ? quill.Document.fromJson(jsonDecode(widget.note!.content))
+          : quill.Document(),
+      selection: const TextSelection.collapsed(offset: 0),
     );
     _focusNode = FocusNode();
+    _scrollController = ScrollController();
     _isChecklist = widget.note?.isChecklist ?? false;
     _tags = widget.note?.tags ?? [];
   }
@@ -40,6 +43,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     _titleController.dispose();
     _contentController.dispose();
     _focusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -48,7 +52,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
       final note = Note(
         id: widget.note?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text,
-        content: jsonEncode(_contentController.document.toJson()),
+        content: jsonEncode(_contentController.document.toDelta().toJson()),
         tags: _tags,
         isChecklist: _isChecklist,
         checklistItems: [], // TODO: Add checklist support
@@ -102,12 +106,36 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              SizedBox(
+              Container(
                 height: 250,
-                child: ZefyrEditor(
-                  controller: _contentController,
-                  focusNode: _focusNode,
-                  padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Column(
+                  children: [
+                    quill.QuillToolbar(
+                      child: quill.QuillToolbarToggleStyleButton(
+                        controller: _contentController,
+                        options:
+                            const quill.QuillToolbarToggleStyleButtonOptions(),
+                        attribute: quill.Attribute.bold,
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        child: quill.QuillEditor(
+                          focusNode: _focusNode,
+                          scrollController: _scrollController,
+                          configurations: quill.QuillEditorConfigurations(
+                            controller: _contentController,
+                            placeholder: 'Start writing...',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zefyrka/zefyrka.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import '../../../../shared/theme/theme_toggle_button.dart';
 import '../providers/notes_provider.dart';
 import 'note_edit_screen.dart';
@@ -21,6 +21,15 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  String _getPlainText(String content) {
+    try {
+      final doc = quill.Document.fromJson(jsonDecode(content));
+      return doc.toPlainText();
+    } catch (e) {
+      return 'Error loading content';
+    }
   }
 
   @override
@@ -56,10 +65,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 data: (notes) {
                   final filteredNotes = notes.where((note) {
                     final title = note.title.toLowerCase();
-                    final content =
-                        NotusDocument.fromJson(jsonDecode(note.content))
-                            .toPlainText()
-                            .toLowerCase();
+                    final content = _getPlainText(note.content).toLowerCase();
                     final query = _searchQuery.toLowerCase();
                     return title.contains(query) || content.contains(query);
                   }).toList();
@@ -70,14 +76,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                           separatorBuilder: (context, index) => const Divider(),
                           itemBuilder: (context, index) {
                             final note = filteredNotes[index];
-                            final doc = NotusDocument.fromJson(
-                                jsonDecode(note.content));
+                            final content = _getPlainText(note.content);
                             return ListTile(
                               title: Text(note.title),
                               subtitle: Text(
-                                doc.toPlainText().length > 80
-                                    ? doc.toPlainText().substring(0, 80) + '...'
-                                    : doc.toPlainText(),
+                                content.length > 80
+                                    ? content.substring(0, 80) + '...'
+                                    : content,
                               ),
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
