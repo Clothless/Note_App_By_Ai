@@ -250,7 +250,10 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
                   QuillToolbarToggleStyleButton(
                     controller: _quillController,
                     attribute: Attribute.checked,
-                    options: const QuillToolbarToggleStyleButtonOptions(),
+                    options: const QuillToolbarToggleStyleButtonOptions(
+                      tooltip: 'Checkbox',
+                      iconData: Icons.check_box_outline_blank,
+                    ),
                   ),
                 ],
               ),
