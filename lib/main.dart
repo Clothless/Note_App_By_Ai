@@ -1,54 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'features/notes/presentation/screens/notes_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:next_notes_flutter/domain/entities/note.dart';
+import 'package:next_notes_flutter/presentation/bloc/note_bloc.dart';
+import 'package:next_notes_flutter/presentation/screens/home_screen.dart';
+import 'package:next_notes_flutter/presentation/theme/app_theme.dart';
 
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
+final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.system);
 
-void main() {
-  runApp(const ProviderScope(child: NextNotesApp()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive
+  await Hive.initFlutter();
+
+  // Register Note adapter
+  Hive.registerAdapter(NoteAdapter());
+
+  // Open notes box
+  final noteBox = await Hive.openBox<Note>('notes');
+
+  runApp(MyApp(noteBox: noteBox));
 }
 
-class NextNotesApp extends ConsumerWidget {
-  const NextNotesApp({super.key});
+class MyApp extends StatelessWidget {
+  final Box<Note> noteBox;
+
+  const MyApp({
+    super.key,
+    required this.noteBox,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
-    return MaterialApp(
-      title: 'Next Notes',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          primary: Colors.deepPurple,
-          secondary: Colors.deepPurpleAccent,
-          surface: Colors.white,
-          background: Colors.white,
-        ),
-        useMaterial3: true,
-        brightness: Brightness.light,
-        canvasColor: Colors.white,
-        cardColor: Colors.white,
-        dialogBackgroundColor: Colors.white,
-        scaffoldBackgroundColor: Colors.white,
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => NoteBloc(noteBox),
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: themeModeNotifier,
+        builder: (context, themeMode, _) {
+          return MaterialApp(
+            title: 'Next Notes',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            home: const HomeScreen(),
+          );
+        },
       ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-          primary: Colors.deepPurple,
-          secondary: Colors.deepPurpleAccent,
-          surface: Colors.grey[900]!,
-          background: Colors.grey[900]!,
-        ),
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        canvasColor: Colors.grey[900],
-        cardColor: Colors.grey[900],
-        dialogBackgroundColor: Colors.grey[900],
-        scaffoldBackgroundColor: Colors.grey[900],
-      ),
-      themeMode: themeMode,
-      home: const NotesScreen(),
     );
   }
 }
