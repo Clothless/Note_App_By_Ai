@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:next_notes_flutter/domain/entities/note.dart';
 import 'package:next_notes_flutter/presentation/bloc/note_bloc.dart';
 import 'package:next_notes_flutter/presentation/screens/note_edit_screen.dart';
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +18,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     context.read<NoteBloc>().add(LoadNotes());
+  }
+
+  String _getPlainText(String content) {
+    try {
+      final doc = Document.fromJson(jsonDecode(content));
+      return doc.toPlainText();
+    } catch (e) {
+      return content;
+    }
   }
 
   @override
@@ -74,14 +85,19 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: state.notes.length,
               itemBuilder: (context, index) {
                 final note = state.notes[index];
+                final content = _getPlainText(note.content);
                 return Card(
                   margin: const EdgeInsets.only(bottom: 16),
-                  elevation: 2,
+                  elevation: note.isCompleted ? 1 : 2,
+                  color: note.isCompleted
+                      ? Theme.of(context).colorScheme.surface.withOpacity(0.7)
+                      : Theme.of(context).colorScheme.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
                       color: note.color != null
-                          ? Color(note.color!).withOpacity(0.5)
+                          ? Color(note.color!)
+                              .withOpacity(note.isCompleted ? 0.3 : 0.5)
                           : Colors.transparent,
                       width: 2,
                     ),
@@ -103,6 +119,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Row(
                             children: [
+                              if (note.isCompleted)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: Icon(
+                                    Icons.check_circle,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    size: 20,
+                                  ),
+                                ),
                               Expanded(
                                 child: Text(
                                   note.title,
@@ -113,6 +139,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                         fontWeight: FontWeight.bold,
                                         decoration: note.isCompleted
                                             ? TextDecoration.lineThrough
+                                            : null,
+                                        color: note.isCompleted
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withOpacity(0.6)
                                             : null,
                                       ),
                                 ),
@@ -128,10 +160,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-                          if (note.content.isNotEmpty) ...[
+                          if (content.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             Text(
-                              note.content,
+                              content,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -139,21 +171,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                     decoration: note.isCompleted
                                         ? TextDecoration.lineThrough
                                         : null,
+                                    color: note.isCompleted
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.6)
+                                        : null,
                                   ),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
                           const SizedBox(height: 8),
-                          Text(
-                            'Last updated: ${_formatDate(note.updatedAt)}',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 14,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withOpacity(0.6),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Last updated: ${_formatDate(note.updatedAt)}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface
                                           .withOpacity(0.6),
                                     ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
