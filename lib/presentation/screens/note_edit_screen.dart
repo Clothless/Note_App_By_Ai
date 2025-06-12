@@ -175,7 +175,16 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
         ],
       ),
       body: Container(
-        color: _selectedColor != null ? _selectedColor! : null,
+        decoration: BoxDecoration(
+          color:
+              _selectedColor != null ? _selectedColor!.withOpacity(0.05) : null,
+          border: Border(
+            left: BorderSide(
+              color: _selectedColor ?? Colors.transparent,
+              width: 4,
+            ),
+          ),
+        ),
         child: Column(
           children: [
             Padding(
@@ -206,10 +215,44 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
               ),
             ),
             QuillToolbar(
-              child: QuillToolbarToggleStyleButton(
-                controller: _quillController,
-                options: const QuillToolbarToggleStyleButtonOptions(),
-                attribute: Attribute.bold,
+              child: Row(
+                children: [
+                  QuillToolbarToggleStyleButton(
+                    controller: _quillController,
+                    attribute: Attribute.bold,
+                    options: const QuillToolbarToggleStyleButtonOptions(),
+                  ),
+                  QuillToolbarToggleStyleButton(
+                    controller: _quillController,
+                    attribute: Attribute.italic,
+                    options: const QuillToolbarToggleStyleButtonOptions(),
+                  ),
+                  QuillToolbarToggleStyleButton(
+                    controller: _quillController,
+                    attribute: Attribute.underline,
+                    options: const QuillToolbarToggleStyleButtonOptions(),
+                  ),
+                  QuillToolbarToggleStyleButton(
+                    controller: _quillController,
+                    attribute: Attribute.strikeThrough,
+                    options: const QuillToolbarToggleStyleButtonOptions(),
+                  ),
+                  QuillToolbarToggleStyleButton(
+                    controller: _quillController,
+                    attribute: Attribute.ul,
+                    options: const QuillToolbarToggleStyleButtonOptions(),
+                  ),
+                  QuillToolbarToggleStyleButton(
+                    controller: _quillController,
+                    attribute: Attribute.ol,
+                    options: const QuillToolbarToggleStyleButtonOptions(),
+                  ),
+                  QuillToolbarToggleStyleButton(
+                    controller: _quillController,
+                    attribute: Attribute.checked,
+                    options: const QuillToolbarToggleStyleButtonOptions(),
+                  ),
+                ],
               ),
             ),
           ],
