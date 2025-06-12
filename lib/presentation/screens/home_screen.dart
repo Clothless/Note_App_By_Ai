@@ -5,6 +5,7 @@ import 'package:next_notes_flutter/domain/entities/note.dart';
 import 'package:next_notes_flutter/presentation/bloc/note_bloc.dart';
 import 'package:next_notes_flutter/presentation/screens/note_edit_screen.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -234,6 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    return DateFormat('dd/MM/yyyy HH:mm').format(date);
   }
 }
