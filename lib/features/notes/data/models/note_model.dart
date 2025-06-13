@@ -31,6 +31,9 @@ class NoteModel extends HiveObject {
   @HiveField(8)
   String? folderId;
 
+  @HiveField(9)
+  int color;
+
   NoteModel({
     required this.id,
     required this.title,
@@ -41,6 +44,7 @@ class NoteModel extends HiveObject {
     required this.createdAt,
     required this.updatedAt,
     this.folderId,
+    this.color = 0xFFFFFFFF, // default white
   });
 }
 

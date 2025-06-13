@@ -8,6 +8,7 @@ class Note {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? folderId;
+  final int color;
 
   Note({
     required this.id,
@@ -19,6 +20,7 @@ class Note {
     required this.createdAt,
     required this.updatedAt,
     this.folderId,
+    this.color = 0xFFFFFFFF,
   });
 }
 

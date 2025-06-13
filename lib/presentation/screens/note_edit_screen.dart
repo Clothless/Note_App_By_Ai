@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:next_notes_flutter/domain/entities/note.dart';
 import 'package:next_notes_flutter/presentation/bloc/note_bloc.dart';
+import 'package:next_notes_flutter/presentation/bloc/note_event.dart';
 import 'dart:convert';
 
 class NoteEditScreen extends StatefulWidget {

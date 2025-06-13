@@ -21,6 +21,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   late ScrollController _scrollController;
   bool _isChecklist = false;
   List<String> _tags = [];
+  int _color = 0xFFFFFFFF;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     _scrollController = ScrollController();
     _isChecklist = widget.note?.isChecklist ?? false;
     _tags = widget.note?.tags ?? [];
+    _color = widget.note?.color ?? 0xFFFFFFFF;
   }
 
   @override
@@ -59,6 +61,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
         createdAt: widget.note?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
         folderId: null,
+        color: _color,
       );
       if (widget.note == null) {
         ref.read(notesProvider.notifier).addNote(note);
@@ -149,6 +152,40 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                     .where((e) => e.isNotEmpty)
                     .toList(),
               ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Text('Note Color: '),
+                  ...[
+                    0xFFFFFFFF,
+                    0xFFFFF59D,
+                    0xFFB2FF59,
+                    0xFF80D8FF,
+                    0xFFFF8A80,
+                    0xFFD1C4E9,
+                  ].map((color) => GestureDetector(
+                        onTap: () => setState(() => _color = color),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: Color(color),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color:
+                                  _color == color ? Colors.black : Colors.grey,
+                              width: _color == color ? 2 : 1,
+                            ),
+                          ),
+                          child: _color == color
+                              ? const Icon(Icons.check, size: 18)
+                              : null,
+                        ),
+                      )),
+                ],
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),

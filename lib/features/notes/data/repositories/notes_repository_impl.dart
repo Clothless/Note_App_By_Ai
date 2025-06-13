@@ -23,6 +23,7 @@ class NotesRepositoryImpl implements NotesRepository {
       createdAt: note.createdAt,
       updatedAt: note.updatedAt,
       folderId: note.folderId,
+      color: note.color,
     );
     await localDatasource.addNote(noteModel);
   }
@@ -42,6 +43,7 @@ class NotesRepositoryImpl implements NotesRepository {
       createdAt: note.createdAt,
       updatedAt: note.updatedAt,
       folderId: note.folderId,
+      color: note.color,
     );
     await localDatasource.updateNote(noteModel);
   }
@@ -68,6 +70,7 @@ class NotesRepositoryImpl implements NotesRepository {
               createdAt: model.createdAt,
               updatedAt: model.updatedAt,
               folderId: model.folderId,
+              color: model.color,
             ))
         .toList();
   }
@@ -89,6 +92,7 @@ class NotesRepositoryImpl implements NotesRepository {
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
       folderId: model.folderId,
+      color: model.color,
     );
   }
 }
