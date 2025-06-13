@@ -133,120 +133,178 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        left: BorderSide(
-                          color: note.color != null
-                              ? Color(note.color!).withOpacity(0.8)
-                              : Colors.transparent,
-                          width: 6,
-                        ),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => NoteEditScreen(note: note),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                if (note.isCompleted)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: Icon(
-                                      Icons.check_circle,
-                                      color: isDarkMode
-                                          ? Colors.white70
-                                          : Colors.blue,
-                                      size: 20,
-                                    ),
-                                  ),
-                                Expanded(
-                                  child: Text(
-                                    note.title,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDarkMode
-                                          ? (note.isCompleted
-                                              ? Colors.white38
-                                              : Colors.white)
-                                          : (note.isCompleted
-                                              ? Colors.black38
-                                              : Colors.black87),
-                                      decoration: note.isCompleted
-                                          ? TextDecoration.lineThrough
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                                Checkbox(
-                                  value: note.isCompleted,
-                                  onChanged: (value) {
-                                    context.read<NoteBloc>().add(
-                                          ToggleNoteCompletion(
-                                              note.id, value ?? false),
-                                        );
-                                  },
-                                ),
-                              ],
+                  child: Dismissible(
+                    key: ValueKey(note.id),
+                    direction: DismissDirection.endToStart,
+                    confirmDismiss: (direction) async {
+                      return await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Delete Note'),
+                            content: const Text(
+                              'Are you sure you want to delete this note? This action cannot be undone.',
                             ),
-                            if (content.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                content,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDarkMode
-                                      ? (note.isCompleted
-                                          ? Colors.white38
-                                          : Colors.white70)
-                                      : (note.isCompleted
-                                          ? Colors.black38
-                                          : Colors.black54),
-                                  decoration: note.isCompleted
-                                      ? TextDecoration.lineThrough
-                                      : null,
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red,
                                 ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
+                                child: const Text('Delete'),
                               ),
                             ],
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.access_time,
-                                  size: 14,
-                                  color: isDarkMode
-                                      ? Colors.white38
-                                      : Colors.black38,
-                                ),
-                                const SizedBox(width: 4),
+                          );
+                        },
+                      );
+                    },
+                    onDismissed: (direction) {
+                      context.read<NoteBloc>().add(DeleteNote(note.id));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Note deleted'),
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            onPressed: () {
+                              context.read<NoteBloc>().add(AddNote(note));
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(
+                            color: note.color != null
+                                ? Color(note.color!).withOpacity(0.8)
+                                : Colors.transparent,
+                            width: 6,
+                          ),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NoteEditScreen(note: note),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  if (note.isCompleted)
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: Icon(
+                                        Icons.check_circle,
+                                        color: isDarkMode
+                                            ? Colors.white70
+                                            : Colors.blue,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  Expanded(
+                                    child: Text(
+                                      note.title,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDarkMode
+                                            ? (note.isCompleted
+                                                ? Colors.white38
+                                                : Colors.white)
+                                            : (note.isCompleted
+                                                ? Colors.black38
+                                                : Colors.black87),
+                                        decoration: note.isCompleted
+                                            ? TextDecoration.lineThrough
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    value: note.isCompleted,
+                                    onChanged: (value) {
+                                      context.read<NoteBloc>().add(
+                                            ToggleNoteCompletion(
+                                                note.id, value ?? false),
+                                          );
+                                    },
+                                  ),
+                                ],
+                              ),
+                              if (content.isNotEmpty) ...[
+                                const SizedBox(height: 8),
                                 Text(
-                                  'Last updated: ${_formatDate(note.updatedAt)}',
+                                  content,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 14,
+                                    color: isDarkMode
+                                        ? (note.isCompleted
+                                            ? Colors.white38
+                                            : Colors.white70)
+                                        : (note.isCompleted
+                                            ? Colors.black38
+                                            : Colors.black54),
+                                    decoration: note.isCompleted
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    size: 14,
                                     color: isDarkMode
                                         ? Colors.white38
                                         : Colors.black38,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Last updated: ${_formatDate(note.updatedAt)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDarkMode
+                                          ? Colors.white38
+                                          : Colors.black38,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
