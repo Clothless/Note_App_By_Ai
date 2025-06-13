@@ -1,32 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:next_notes_flutter/domain/entities/note.dart';
-
-// Events
-abstract class NoteEvent {}
-
-class LoadNotes extends NoteEvent {}
-
-class AddNote extends NoteEvent {
-  final Note note;
-  AddNote(this.note);
-}
-
-class UpdateNote extends NoteEvent {
-  final Note note;
-  UpdateNote(this.note);
-}
-
-class DeleteNote extends NoteEvent {
-  final String id;
-  DeleteNote(this.id);
-}
-
-class ToggleNoteCompletion extends NoteEvent {
-  final String id;
-  final bool isCompleted;
-  ToggleNoteCompletion(this.id, this.isCompleted);
-}
+import 'package:next_notes_flutter/presentation/bloc/note_event.dart';
 
 // States
 abstract class NoteState {}
@@ -55,6 +30,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     on<UpdateNote>(_onUpdateNote);
     on<DeleteNote>(_onDeleteNote);
     on<ToggleNoteCompletion>(_onToggleNoteCompletion);
+    on<ReorderNotes>(_onReorderNotes);
   }
 
   Future<void> _onLoadNotes(LoadNotes event, Emitter<NoteState> emit) async {
@@ -112,6 +88,19 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       }
     } catch (e) {
       emit(NoteError('Failed to toggle note completion: $e'));
+    }
+  }
+
+  Future<void> _onReorderNotes(
+      ReorderNotes event, Emitter<NoteState> emit) async {
+    try {
+      await _noteBox.clear();
+      for (var note in event.notes) {
+        await _noteBox.put(note.id, note);
+      }
+      emit(NoteLoaded(event.notes));
+    } catch (e) {
+      emit(NoteError('Failed to reorder notes: $e'));
     }
   }
 }

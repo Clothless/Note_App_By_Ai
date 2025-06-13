@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:next_notes_flutter/domain/entities/note.dart';
 import 'package:next_notes_flutter/presentation/bloc/note_bloc.dart';
+import 'package:next_notes_flutter/presentation/bloc/note_event.dart';
 import 'package:next_notes_flutter/presentation/screens/note_edit_screen.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -100,14 +101,32 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             }
-            return ListView.builder(
+            return ReorderableListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: state.notes.length,
+              onReorder: (oldIndex, newIndex) {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                final List<Note> newNotes = List.from(state.notes);
+                final note = newNotes.removeAt(oldIndex);
+                newNotes.insert(newIndex, note);
+                context.read<NoteBloc>().emit(NoteLoaded(newNotes));
+                context.read<NoteBloc>().add(ReorderNotes(newNotes));
+              },
+              proxyDecorator: (child, index, animation) {
+                return Material(
+                  elevation: 8,
+                  color: Colors.transparent,
+                  child: child,
+                );
+              },
               itemBuilder: (context, index) {
                 final note = state.notes[index];
                 final content = _getPlainText(note.content);
                 final isDarkMode = themeModeNotifier.value == ThemeMode.dark;
                 return Card(
+                  key: ValueKey(note.id),
                   margin: const EdgeInsets.only(bottom: 16),
                   elevation: note.isCompleted ? 1 : 2,
                   color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
